@@ -1,0 +1,6 @@
+[1] S. Baskar and S. Sivaji Ganesh, Introduction to Numerical Analysis [Study Material for MA 214], Pg 129-134, Spring 2018-19
+[2] Numpy Documentation for specific functions:
+[2.1] https://numpy.org/doc/1.19/reference/random/generated/numpy.random.binomial.html
+[2.2] https://numpy.org/doc/1.19/reference/random/generated/numpy.random.choice.html
+[2.3] https://numpy.org/doc/1.19/reference/random/generated/numpy.random.beta.html
+[3] Stackoverflow [Ignore Numpy warnings], https://stackoverflow.com/questions/29950557/ignore-divide-by-0-warning-in-numpy/29950752
