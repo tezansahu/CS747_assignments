@@ -51,33 +51,33 @@ def task1(instance, seed_start, seed_end):
     num_seeds = seed_end - seed_start
     start = time.time()
     
-    # # Epsilon-greedy agent
-    # for seed in range(seed_start, seed_end):
-    #     bandit_instance = Bandit(instance_path, seed)
-    #     print("=======================================================================================")
-    #     print("Starting epsilon-greedy [Seed = {}]".format(seed))
-    #     print("=======================================================================================")
-    #     agent_eps_gr = EpsilonGreedy(bandit_instance.num_arms, 0.02, seed)
-    #     expt_eps_gr = Experiment(bandit_instance, agent_eps_gr)
-    #     regrets_eps_gr = expt_eps_gr.run_bandit(102400, debug=True, display_step=10000)
-    #     avg_regrets_eps_gr += regrets_eps_gr
-    #     add_to_df(instance, "epsilon-greedy", regrets_eps_gr)
-    #     for i in range(len(horizons)):
-    #         add_data_to_file("outputs/outputDataT1.txt", instance, "epsilon-greedy", seed, 0.02, horizons[i], regrets_eps_gr[i])
+    # Epsilon-greedy agent
+    for seed in range(seed_start, seed_end):
+        bandit_instance = Bandit(instance_path, seed)
+        print("=======================================================================================")
+        print("Starting epsilon-greedy [Seed = {}]".format(seed))
+        print("=======================================================================================")
+        agent_eps_gr = EpsilonGreedy(bandit_instance.num_arms, 0.02, seed)
+        expt_eps_gr = Experiment(bandit_instance, agent_eps_gr)
+        regrets_eps_gr = expt_eps_gr.run_bandit(102400, debug=True, display_step=10000)
+        avg_regrets_eps_gr += regrets_eps_gr
+        add_to_df(instance, "epsilon-greedy", regrets_eps_gr)
+        for i in range(len(horizons)):
+            add_data_to_file("outputs/outputDataT1.txt", instance, "epsilon-greedy", seed, 0.02, horizons[i], regrets_eps_gr[i])
 
-    # # UCB agent
-    # for seed in range(seed_start, seed_end):
-    #     bandit_instance = Bandit(instance_path, seed)
-    #     print("=======================================================================================")
-    #     print("Starting ucb [Seed = {}]".format(seed))
-    #     print("=======================================================================================")
-    #     agent_ucb = UCB(bandit_instance.num_arms, seed)
-    #     expt_ucb = Experiment(bandit_instance, agent_ucb)
-    #     regrets_ucb = expt_ucb.run_bandit(102400, debug=True, display_step=10000)
-    #     avg_regrets_ucb += regrets_ucb
-    #     add_to_df(instance, "ucb", regrets_ucb)
-    #     for i in range(len(horizons)):
-    #         add_data_to_file("outputs/outputDataT1.txt", instance, "ucb", seed, 0, horizons[i], regrets_ucb[i])
+    # UCB agent
+    for seed in range(seed_start, seed_end):
+        bandit_instance = Bandit(instance_path, seed)
+        print("=======================================================================================")
+        print("Starting ucb [Seed = {}]".format(seed))
+        print("=======================================================================================")
+        agent_ucb = UCB(bandit_instance.num_arms, seed)
+        expt_ucb = Experiment(bandit_instance, agent_ucb)
+        regrets_ucb = expt_ucb.run_bandit(102400, debug=True, display_step=10000)
+        avg_regrets_ucb += regrets_ucb
+        add_to_df(instance, "ucb", regrets_ucb)
+        for i in range(len(horizons)):
+            add_data_to_file("outputs/outputDataT1.txt", instance, "ucb", seed, 0, horizons[i], regrets_ucb[i])
 
     # KL-UCB agent
     for seed in range(seed_start, seed_end):
@@ -93,19 +93,19 @@ def task1(instance, seed_start, seed_end):
         for i in range(len(horizons)):
             add_data_to_file("outputs/outputDataT1.txt", instance, "kl-ucb", seed, 0, horizons[i], regrets_kl_ucb[i])
 
-    # # Thompson Sampling agent
-    # for seed in range(seed_start, seed_end):
-    #     bandit_instance = Bandit(instance_path, seed)
-    #     print("=======================================================================================")
-    #     print("Starting thompson-sampling [Seed = {}]".format(seed))
-    #     print("=======================================================================================")
-    #     agent_ts = ThompsonSampling(bandit_instance.num_arms, seed)
-    #     expt_ts = Experiment(bandit_instance, agent_ts)
-    #     regrets_ts = expt_ts.run_bandit(102400, debug=True, display_step=10000)
-    #     avg_regrets_ts += regrets_ts
-    #     add_to_df(instance, "thompson-sampling", regrets_ts)
-    #     for i in range(len(horizons)):
-    #         add_data_to_file("outputs/outputDataT1.txt", instance, "thompson-sampling", seed, 0, horizons[i], regrets_ts[i])
+    # Thompson Sampling agent
+    for seed in range(seed_start, seed_end):
+        bandit_instance = Bandit(instance_path, seed)
+        print("=======================================================================================")
+        print("Starting thompson-sampling [Seed = {}]".format(seed))
+        print("=======================================================================================")
+        agent_ts = ThompsonSampling(bandit_instance.num_arms, seed)
+        expt_ts = Experiment(bandit_instance, agent_ts)
+        regrets_ts = expt_ts.run_bandit(102400, debug=True, display_step=10000)
+        avg_regrets_ts += regrets_ts
+        add_to_df(instance, "thompson-sampling", regrets_ts)
+        for i in range(len(horizons)):
+            add_data_to_file("outputs/outputDataT1.txt", instance, "thompson-sampling", seed, 0, horizons[i], regrets_ts[i])
     
     end = time.time()
 
