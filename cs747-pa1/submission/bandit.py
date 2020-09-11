@@ -218,7 +218,7 @@ class Experiment():
         self.episode_length = np.array([0])
         self.episode_reward = np.array([0])
     
-    def run_bandit(self, horizon, debug=False):
+    def run_bandit(self, horizon, debug=False, display_step=1000):
         cumulative_reward = 0.0
         cumulative_regret = 0.0
 
@@ -233,12 +233,11 @@ class Experiment():
 
             # The following code is used to obtain data for intermediate horizon values to be used in T4
             if debug:
-                if (time+1) % 100 == 0:
+                if (time+1) % display_step == 0:
                     print("Time step: ", time+1)
-                if time in [0, 99, 399, 1599, 6399, 25599, 102399]:
+                if time in [99, 399, 1599, 6399, 25599, 102399]:
                     cumulative_regrets.append(cumulative_regret)
 
-        print(self.agent.total_counts)
         if debug:
             return cumulative_regrets
         else:
