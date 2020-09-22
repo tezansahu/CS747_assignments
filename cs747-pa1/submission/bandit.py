@@ -125,7 +125,7 @@ class KL_UCB:
         return kld
         
     # Solve the KL-divernce equation using bisection method
-    def _bisection_solver(self, count, m, n, timestep, c=3, tolerance=0.0001):
+    def _bisection_solver(self, count, m, n, timestep, c=3, tolerance=0.0001, max_steps = 5):
         # Define the KL-divergence function
         kld_func = lambda kld: count * kld - np.log(timestep) - (c * np.log(np.log(timestep)))
         
@@ -133,11 +133,15 @@ class KL_UCB:
         f_n = kld_func(self.kld(n, m))
         
         if (f_m * f_n >= 0): 
+            # return np.nan
             return None
         r = m
-
+        steps = 0
         # Find the root of the equation using bisection method up to the desired tolerance
         while ((n-m) >= tolerance): 
+            steps += 1
+            if steps > max_steps:
+                break
             r = (m + n)/2
             f_r = kld_func(self.kld(r, m))
             if (f_r == 0.0): 
@@ -192,7 +196,7 @@ class ThompsonSampling:
         self.successes = np.ones(num_arms)
         self.failures = np.ones(num_arms)
 
-    # Choose an action based on the UCB strategy
+    # Choose an action based on the Thompson Sampling strategy
     def act(self):
         sampled = np.random.beta(np.add(self.successes, 1), np.add(self.failures, 1))
         current_arm = np.argmax(sampled)
@@ -205,6 +209,25 @@ class ThompsonSampling:
         else:
             self.failures[arm_pulled] += 1
         self.total_counts[arm_pulled] += 1
+
+#######################################################################################################################################
+
+# Class to implement the agent with Thompson Sampling (with hint) algorithm
+class ThompsonSamplingWithHint:
+    def __init__(self, num_arms, seed, hint):
+        np.random.seed(seed)
+        self.hint = hint
+
+        self.pred_exp_arm_rewards = hint
+        self.num_arms = num_arms
+
+    # Choose an action based on the UCB strategy
+    def act(self):
+        pass
+    
+    # Receive feedback from the bandit instance after pulling an arm & update the state of the agent
+    def feedback(self, arm_pulled, reward):
+        pass
 
 #######################################################################################################################################
 ########################################################### Bandit Experiment #########################################################
@@ -261,22 +284,27 @@ def main():
     elif args.algorithm == "thompson-sampling":
         agent = ThompsonSampling(bandit_instance.num_arms, args.randomSeed)
     elif args.algorithm == "thompson-sampling-with-hint":
-        pass
+        # Generate the random permutation of expected arm rewards as a hint for the algorithm
+        hint = np.sort(bandit_instance.expected_arm_rewards)
+        agent = ThompsonSamplingWithHint(bandit_instance.num_arms, args.randomSeed, hint)
 
     # Initialize an experiment using the bandit instance and the agent & start running it
     expt = Experiment(bandit_instance, agent)
     regret = expt.run_bandit(args.horizon)
     
+    output = "{instance}, {algo}, {seed}, {epsilon}, {horizon}, {regret}\n".format(
+        instance = args.instance,
+        algo = args.algorithm,
+        seed = args.randomSeed,
+        epsilon = args.epsilon,
+        horizon = args.horizon,
+        regret = regret
+    )
+    print(output)
+
     # Write the output to a file
     with open("output.txt", "w") as out_file:
-        out_file.write("{instance}, {algo}, {seed}, {epsilon}, {horizon}, {regret}\n".format(
-            instance = args.instance,
-            algo = args.algorithm,
-            seed = args.randomSeed,
-            epsilon = args.epsilon,
-            horizon = args.horizon,
-            regret = regret
-        ))
+        out_file.write(output)
 
 if __name__ == "__main__":
     main()
