@@ -7,12 +7,14 @@ import time
 import os
 
 parser = ArgumentParser()
-parser.add_argument("--task", type=int, help="Task number [1, 2, 3]")
-parser.add_argument("--instance", type=int, help="bandit instance number [1, 2, 3]")
-parser.add_argument("--seed-start", type=int, help="start value of seed")
-parser.add_argument("--seed-end", type=int, help="end value of seed")
-parser.add_argument('--task1', action='store_true')
-parser.add_argument('--task2', action='store_true')
+parser.add_argument("--task", type=int, help="Task number [1, 2, 3, 4]")
+parser.add_argument("--instance", type=int, default=1, help="bandit instance number [1, 2, 3], to be used for tasks 1, 2 & 3")
+parser.add_argument("--seed-start", type=int, default=0, help="start value of seed, to be used for tasks 1, 2 & 3")
+parser.add_argument("--seed-end", type=int, default=50, help="end value of seed, to be used for tasks 1, 2 & 3")
+parser.add_argument("--epsilon", type=float, default=0.02, help="epsilon value, to be used for task 3")
+parser.add_argument("--horizon", type=int, default=1000, help="horizon to be used, for task 3")
+parser.add_argument('--task1', action='store_true', help="to be used for task 4")
+parser.add_argument('--task2', action='store_true', help="to be used for task 4")
 
 ############################################################### Utility ################################################################
 
@@ -52,32 +54,32 @@ def task1(instance, seed_start, seed_end):
     start = time.time()
     
     # # Epsilon-greedy agent
-    # for seed in range(seed_start, seed_end):
-    #     bandit_instance = Bandit(instance_path, seed)
-    #     print("=======================================================================================")
-    #     print("Starting epsilon-greedy [Seed = {}]".format(seed))
-    #     print("=======================================================================================")
-    #     agent_eps_gr = EpsilonGreedy(bandit_instance.num_arms, 0.02, seed)
-    #     expt_eps_gr = Experiment(bandit_instance, agent_eps_gr)
-    #     regrets_eps_gr = expt_eps_gr.run_bandit(102400, debug=True, display_step=10000)
-    #     avg_regrets_eps_gr += regrets_eps_gr
-    #     add_to_df(instance, "epsilon-greedy", regrets_eps_gr)
-    #     for i in range(len(horizons)):
-    #         add_data_to_file("outputs/outputDataT1.txt", instance, "epsilon-greedy", seed, 0.02, horizons[i], regrets_eps_gr[i])
+    for seed in range(seed_start, seed_end):
+        bandit_instance = Bandit(instance_path, seed)
+        print("=======================================================================================")
+        print("Starting epsilon-greedy [Seed = {}]".format(seed))
+        print("=======================================================================================")
+        agent_eps_gr = EpsilonGreedy(bandit_instance.num_arms, 0.02, seed)
+        expt_eps_gr = Experiment(bandit_instance, agent_eps_gr)
+        regrets_eps_gr = expt_eps_gr.run_bandit(102400, debug=True, display_step=10000, task1or2=True)
+        avg_regrets_eps_gr += regrets_eps_gr
+        add_to_df(instance, "epsilon-greedy", regrets_eps_gr)
+        for i in range(len(horizons)):
+            add_data_to_file("outputs/outputDataT1.txt", instance, "epsilon-greedy", seed, 0.02, horizons[i], regrets_eps_gr[i])
 
     # # UCB agent
-    # for seed in range(seed_start, seed_end):
-    #     bandit_instance = Bandit(instance_path, seed)
-    #     print("=======================================================================================")
-    #     print("Starting ucb [Seed = {}]".format(seed))
-    #     print("=======================================================================================")
-    #     agent_ucb = UCB(bandit_instance.num_arms, seed)
-    #     expt_ucb = Experiment(bandit_instance, agent_ucb)
-    #     regrets_ucb = expt_ucb.run_bandit(102400, debug=True, display_step=10000)
-    #     avg_regrets_ucb += regrets_ucb
-    #     add_to_df(instance, "ucb", regrets_ucb)
-    #     for i in range(len(horizons)):
-    #         add_data_to_file("outputs/outputDataT1.txt", instance, "ucb", seed, 0, horizons[i], regrets_ucb[i])
+    for seed in range(seed_start, seed_end):
+        bandit_instance = Bandit(instance_path, seed)
+        print("=======================================================================================")
+        print("Starting ucb [Seed = {}]".format(seed))
+        print("=======================================================================================")
+        agent_ucb = UCB(bandit_instance.num_arms, seed)
+        expt_ucb = Experiment(bandit_instance, agent_ucb)
+        regrets_ucb = expt_ucb.run_bandit(102400, debug=True, display_step=10000, task1or2=True)
+        avg_regrets_ucb += regrets_ucb
+        add_to_df(instance, "ucb", regrets_ucb)
+        for i in range(len(horizons)):
+            add_data_to_file("outputs/outputDataT1.txt", instance, "ucb", seed, 0, horizons[i], regrets_ucb[i])
 
     # KL-UCB agent
     for seed in range(seed_start, seed_end):
@@ -87,25 +89,25 @@ def task1(instance, seed_start, seed_end):
         print("=======================================================================================")
         agent_kl_ucb = KL_UCB(bandit_instance.num_arms, seed)
         expt_kl_ucb = Experiment(bandit_instance, agent_kl_ucb)
-        regrets_kl_ucb = expt_kl_ucb.run_bandit(102400, debug=True, display_step=10000)
+        regrets_kl_ucb = expt_kl_ucb.run_bandit(102400, debug=True, display_step=10000, task1or2=True)
         avg_regrets_kl_ucb += regrets_kl_ucb
         add_to_df(instance, "kl-ucb", regrets_kl_ucb)
         for i in range(len(horizons)):
             add_data_to_file("outputs/outputDataT1.txt", instance, "kl-ucb", seed, 0, horizons[i], regrets_kl_ucb[i])
 
     # # Thompson Sampling agent
-    # for seed in range(seed_start, seed_end):
-    #     bandit_instance = Bandit(instance_path, seed)
-    #     print("=======================================================================================")
-    #     print("Starting thompson-sampling [Seed = {}]".format(seed))
-    #     print("=======================================================================================")
-    #     agent_ts = ThompsonSampling(bandit_instance.num_arms, seed)
-    #     expt_ts = Experiment(bandit_instance, agent_ts)
-    #     regrets_ts = expt_ts.run_bandit(102400, debug=True, display_step=10000)
-    #     avg_regrets_ts += regrets_ts
-    #     add_to_df(instance, "thompson-sampling", regrets_ts)
-    #     for i in range(len(horizons)):
-    #         add_data_to_file("outputs/outputDataT1.txt", instance, "thompson-sampling", seed, 0, horizons[i], regrets_ts[i])
+    for seed in range(seed_start, seed_end):
+        bandit_instance = Bandit(instance_path, seed)
+        print("=======================================================================================")
+        print("Starting thompson-sampling [Seed = {}]".format(seed))
+        print("=======================================================================================")
+        agent_ts = ThompsonSampling(bandit_instance.num_arms, seed)
+        expt_ts = Experiment(bandit_instance, agent_ts)
+        regrets_ts = expt_ts.run_bandit(102400, debug=True, display_step=10000, task1or2=True)
+        avg_regrets_ts += regrets_ts
+        add_to_df(instance, "thompson-sampling", regrets_ts)
+        for i in range(len(horizons)):
+            add_data_to_file("outputs/outputDataT1.txt", instance, "thompson-sampling", seed, 0, horizons[i], regrets_ts[i])
     
     end = time.time()
 
@@ -137,7 +139,7 @@ def task2(instance, seed_start, seed_end):
     #     print("=======================================================================================")
     #     agent_ts = ThompsonSampling(bandit_instance.num_arms, seed)
     #     expt_ts = Experiment(bandit_instance, agent_ts)
-    #     regrets_ts = expt_ts.run_bandit(102400, debug=True, display_step=10000)
+    #     regrets_ts = expt_ts.run_bandit(102400, debug=True, display_step=10000, task1or2=True)
     #     avg_regrets_ts += regrets_ts
     #     add_to_df(instance, "thompson-sampling", regrets_ts)
     #     for i in range(len(horizons)):
@@ -152,7 +154,7 @@ def task2(instance, seed_start, seed_end):
         print("=======================================================================================")
         agent_tswh = ThompsonSamplingWithHint(bandit_instance.num_arms, seed, hint)
         expt_tswh = Experiment(bandit_instance, agent_tswh)
-        regrets_tswh = expt_tswh.run_bandit(102400, debug=True, display_step=10000)
+        regrets_tswh = expt_tswh.run_bandit(102400, debug=True, display_step=10000, task1or2=True)
         avg_regrets_tswh += regrets_tswh
         add_to_df(instance, "thompson-sampling-with-hint", regrets_tswh)
         for i in range(len(horizons)):
@@ -167,13 +169,41 @@ def task2(instance, seed_start, seed_end):
 
 ################################################################ Task 3 ################################################################
 
-def task3(task_1 = True, task_2 = True):
+def task3(instance, epsilon, seed_start, seed_end, horizon = 1000):
+    instance_path = "./instances/i-{}.txt".format(instance)
+    avg_regrets_eps_gr = 0
+    num_seeds = seed_end - seed_start
+    start = time.time()
+    
+    # # Epsilon-greedy agent
+    for seed in range(seed_start, seed_end):
+        bandit_instance = Bandit(instance_path, seed)
+        # print("=======================================================================================")
+        # print("Starting epsilon-greedy [Seed = {}]".format(seed))
+        # print("=======================================================================================")
+        agent_eps_gr = EpsilonGreedy(bandit_instance.num_arms, epsilon, seed)
+        expt_eps_gr = Experiment(bandit_instance, agent_eps_gr)
+        regrets_eps_gr = expt_eps_gr.run_bandit(horizon, debug=True, task3=True)
+        avg_regrets_eps_gr += regrets_eps_gr
+        
+    end = time.time()
+
+    avg_regrets_eps_gr /= num_seeds
+
+    print("Total Time Taken:\t", end - start, "sec")
+    print("Epsilon:\t\t", epsilon)
+    print("Horizon:\t\t", horizon)
+    print("Seeds:\t\t\t", num_seeds)
+    print("Regret:\t\t\t", avg_regrets_eps_gr) 
+
+################################################################ Task 4 ################################################################
+
+def task4(task_1 = True, task_2 = True):
     horizons = np.asarray([100, 400, 1600, 6400, 25600, 102400])
 
     if task_1:
         # Create regret vs horizon plots for each of the 3 bandit instances
         for i in range(1, 4):
-            print(i)
             eps_gr_df = pd.read_csv("./outputs/data_i{}_epsilon-greedy.csv".format(i))
             ucb_df = pd.read_csv("./outputs/data_i{}_ucb.csv".format(i))
             kl_ucb_df = pd.read_csv("./outputs/data_i{}_kl-ucb.csv".format(i))
@@ -187,7 +217,7 @@ def task3(task_1 = True, task_2 = True):
             # Plot the regrets for each of the algorithms
             plt.figure()
             plt.xscale("log")
-            plt.yscale("log")
+            # plt.yscale("log")
             plt.ylabel("Regret")
             plt.xlabel("Horizon")
             plt.title("Bandit Instance {}: Regret vs Horizon".format(i))
@@ -201,7 +231,6 @@ def task3(task_1 = True, task_2 = True):
     elif task_2:
         # Create regret vs horizon plots for each of the 3 bandit instances
         for i in range(1, 4):
-        # for i in [3]:
             ts_df = pd.read_csv("./outputs/data_i{}_thompson-sampling.csv".format(i))
             ts_wh_df = pd.read_csv("./outputs/data_i{}_thompson-sampling-with-hint.csv".format(i))
 
@@ -211,7 +240,7 @@ def task3(task_1 = True, task_2 = True):
             # Plot the regrets for each of the algorithms
             plt.figure()
             plt.xscale("log")
-            plt.yscale("log")
+            # plt.yscale("log")
             plt.ylabel("Regret")
             plt.xlabel("Horizon")
             plt.title("Bandit Instance {}: Regret vs Horizon".format(i))
@@ -230,7 +259,9 @@ def main():
     elif args.task == 2:
         task2(args.instance, args.seed_start, args.seed_end)
     elif args.task == 3:
-        task3(args.task1, args.task2)
+        task3(args.instance, args.epsilon, args.seed_start, args.seed_end, args.horizon)
+    elif args.task == 4:
+        task4(args.task1, args.task2)
     else:
         print("Invalid Task")
 

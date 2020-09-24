@@ -217,17 +217,22 @@ class ThompsonSamplingWithHint:
     def __init__(self, num_arms, seed, hint):
         np.random.seed(seed)
         self.hint = hint
-
-        self.pred_exp_arm_rewards = hint
         self.num_arms = num_arms
+        self.arm_exp_prob = np.ones((num_arms, num_arms)) * (1 / num_arms) # These are the priors
 
-    # Choose an action based on the UCB strategy
+    # Choose an action based on the Thompson Sampling (with hint) algorithm
     def act(self):
-        pass
+        max_hint_probs = self.arm_exp_prob[:, -1] # These are the posterior probabilities of arms being equal to the maximum value in the hint
+        current_arm = np.argmax(max_hint_probs)
+        return current_arm
     
     # Receive feedback from the bandit instance after pulling an arm & update the state of the agent
     def feedback(self, arm_pulled, reward):
-        pass
+        if reward > 0:
+            self.arm_exp_prob[arm_pulled] = self.arm_exp_prob[arm_pulled] * self.hint
+        else:
+            self.arm_exp_prob[arm_pulled] = self.arm_exp_prob[arm_pulled] * (1 - self.hint)
+        self.arm_exp_prob[arm_pulled] /= np.sum(self.arm_exp_prob[arm_pulled])
 
 #######################################################################################################################################
 ########################################################### Bandit Experiment #########################################################
@@ -241,7 +246,7 @@ class Experiment():
         self.episode_length = np.array([0])
         self.episode_reward = np.array([0])
     
-    def run_bandit(self, horizon, debug=False, display_step=1000):
+    def run_bandit(self, horizon, debug=False, display_step=1000, task3=False, task1or2=False):
         cumulative_reward = 0.0
         cumulative_regret = 0.0
 
@@ -256,13 +261,16 @@ class Experiment():
 
             # The following code is used to obtain data for intermediate horizon values to be used in T4
             if debug:
-                if (time+1) % display_step == 0:
-                    print("Time step: ", time+1)
-                if time in [99, 399, 1599, 6399, 25599, 102399]:
-                    cumulative_regrets.append(cumulative_regret)
-
+                if task1or2:
+                    if (time+1) % display_step == 0:
+                        print("Time step: ", time+1)
+                    if time in [99, 399, 1599, 6399, 25599, 102399]:
+                        cumulative_regrets.append(cumulative_regret)
         if debug:
-            return cumulative_regrets
+            if task1or2:
+                return cumulative_regrets
+            elif task3:
+                return cumulative_regret
         else:
             return cumulative_regret
 
