@@ -3,4 +3,5 @@
 [2.1] https://numpy.org/doc/1.19/reference/random/generated/numpy.random.binomial.html
 [2.2] https://numpy.org/doc/1.19/reference/random/generated/numpy.random.choice.html
 [2.3] https://numpy.org/doc/1.19/reference/random/generated/numpy.random.beta.html
+[2.4] https://numpy.org/doc/stable/reference/random/generated/numpy.random.choice.html
 [3] Stackoverflow [Ignore Numpy warnings], https://stackoverflow.com/questions/29950557/ignore-divide-by-0-warning-in-numpy/29950752

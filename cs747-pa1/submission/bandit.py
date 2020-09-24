@@ -124,7 +124,7 @@ class KL_UCB:
         kld = np.sum(np.where(x != 0, x * np.log(x / y), 0))
         return kld
         
-    # Solve the KL-divernce equation using bisection method
+    # Solve the KL-divergence equation using bisection method
     def _bisection_solver(self, count, m, n, timestep, c=3, tolerance=0.0001, max_steps = 5):
         # Define the KL-divergence function
         kld_func = lambda kld: count * kld - np.log(timestep) - (c * np.log(np.log(timestep)))
@@ -133,10 +133,10 @@ class KL_UCB:
         f_n = kld_func(self.kld(n, m))
         
         if (f_m * f_n >= 0): 
-            # return np.nan
             return None
         r = m
         steps = 0
+        
         # Find the root of the equation using bisection method up to the desired tolerance
         while ((n-m) >= tolerance): 
             steps += 1
@@ -155,8 +155,6 @@ class KL_UCB:
     # Compute the KL-UCBs for all arms
     def _compute_kl_ucb(self, counts, emp_means, timestep, c=3, tolerance=0.0001):
         kl_ucbs = np.zeros(self.num_arms)
-        
-        # kl_ucbs = np.asarray(list(map(functools.partial(self._bisection_solver, n=1, timestep=timestep, c=c), counts, emp_means)))
 
         for i, emp_mean in enumerate(emp_means):
             kl_ucbs[i] = self._bisection_solver(counts[i], emp_mean, 1, timestep, c)
@@ -173,7 +171,6 @@ class KL_UCB:
         else:
             emp_means = np.divide(self.total_rewards, self.total_counts)
             kl_ucbs = self._compute_kl_ucb(self.total_counts, emp_means, self.timestep, tolerance=tolerance)
-            # print(kl_ucbs)
             current_arm = np.argmax(kl_ucbs)
         
         return current_arm
@@ -216,7 +213,7 @@ class ThompsonSamplingWithHint:
         np.random.seed(seed)
         self.hint = hint
         self.num_arms = num_arms
-        self.arm_exp_prob = np.ones((num_arms, num_arms)) * (1 / num_arms) # These are the priors
+        self.arm_exp_prob = np.ones((num_arms, num_arms)) * (1 / num_arms) # These are the initialized priors for each arm
 
     # Choose an action based on the Thompson Sampling (with hint) algorithm
     def act(self):
@@ -226,6 +223,7 @@ class ThompsonSamplingWithHint:
     
     # Receive feedback from the bandit instance after pulling an arm & update the state of the agent
     def feedback(self, arm_pulled, reward):
+        # Use Bayes' Rule to compute the posterior distribution for the pulled arm based on the priors & reward obtained
         if reward > 0:
             self.arm_exp_prob[arm_pulled] = self.arm_exp_prob[arm_pulled] * self.hint
         else:
