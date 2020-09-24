@@ -190,7 +190,6 @@ class ThompsonSampling:
     def __init__(self, num_arms, seed):
         np.random.seed(seed)
         self.num_arms = num_arms
-        self.total_counts = np.zeros(num_arms)
 
         # Prior Hyper-params: successes = 1; failures = 1
         self.successes = np.ones(num_arms)
@@ -208,7 +207,6 @@ class ThompsonSampling:
             self.successes[arm_pulled] += 1
         else:
             self.failures[arm_pulled] += 1
-        self.total_counts[arm_pulled] += 1
 
 #######################################################################################################################################
 
