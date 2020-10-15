@@ -40,12 +40,11 @@ class MDPPlanning:
                 self.R[int(line[1]), int(line[2]), int(line[3])] = float(line[4])
                 self.T[int(line[1]), int(line[2]), int(line[3])] = float(line[5])
 
-    
+    # Implement Value Iteration for MDP Planning
     def valueIteration(self, threshold = 10e-12):
         V_old = np.zeros(self.num_states)
         V = np.zeros(self.num_states)
         pi = np.zeros(self.num_states)
-
         while True:
             V_temp = np.zeros((self.num_states, self.num_actions))
             for s in range(self.num_states):
@@ -63,10 +62,61 @@ class MDPPlanning:
         
         return V, pi
 
+    # Implement Linear Programming for MDP Planning
+    def linearProgramming(self):
+        V = np.zeros(self.num_states)
+        pi = np.zeros(self.num_states)
 
+        # Logic to be filled
+
+        return V, pi
+
+    # Implement Howard's Policy Iteration for MDP Planning
+    def howardsPolicyIteration(self, threshold=10e-12):
+        V = np.zeros(self.num_states)
+        pi = np.zeros(self.num_states, dtype=np.int64)
+
+        while True:
+            Q = np.zeros((self.num_states, self.num_actions))
+            improvable_states = []
+            improvable_actions = {}
+
+            # Policy evaluation step
+            while True:
+                V_temp = np.zeros(self.num_states)
+                for s in range(self.num_states):
+                    for s_prime in range(self.num_states):
+                        V_temp[s] += self.T[s, pi[s], s_prime] * (self.R[s, pi[s], s_prime] + self.discount*V[s_prime])
+
+                if np.max(np.abs(V_temp - V)) < threshold:
+                    break
+                
+                V = V_temp
+
+            # Policy improvement step
+            for s in range(self.num_states):
+                for a in range(self.num_actions):
+                    for s_prime in range(self.num_states):
+                        Q[s, a] += self.T[s, a, s_prime] * (self.R[s, a, s_prime] + self.discount*V[s_prime])
+                
+                improvable_actions[s] = [a for a in range(self.num_actions) if Q[s, a] - V[s] > threshold]
+            improvable_states = [s for s in range(self.num_states) if len(improvable_actions[s]) > 0]
+
+            # If no more improvable states exist, the optimal policy has been found
+            if(len(improvable_states) == 0):
+                break
+
+            for s in improvable_states:
+                pi[s] = np.random.choice(improvable_actions[s], 1)[0]
+
+        return V, pi
+    
+    # Print optimal value function & optimal policy in the required format
     def printResults(self, V_star, pi_star):
         for (V_s, pi_s) in zip(V_star, pi_star):
             print(V_s, "\t", pi_s, "\n")
+
+
 
 def main():
     parser.add_argument("--mdp", type=str)
@@ -78,8 +128,12 @@ def main():
 
     if args.algorithm == "vi":
         V_star, pi_star = mdp.valueIteration()
+    elif args.algorithm == "lp":
+        V_star, pi_star = mdp.linearProgramming()
+    elif args.algorithm == "hpi":
+        V_star, pi_star = mdp.howardsPolicyIteration()
     else:
-        V_star, pi_star = [], []
+        raise(Exception("Invalid algorithm input"))
     
     mdp.printResults(V_star, pi_star)
 
