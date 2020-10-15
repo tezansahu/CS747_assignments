@@ -1,0 +1,2 @@
+1. PuLP Documentation: https://coin-or.github.io/pulp/index.html
+2. Disabling the calculation log of PuLP Solver: https://stackoverflow.com/questions/38237449/how-to-disable-the-calculations-log-of-pulp
