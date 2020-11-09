@@ -1,5 +1,5 @@
 from envs import WindyGridworldEnv
-from agents import SarsaAgent
+from agents import SarsaAgent, QLearningAgent, ExpectedSarsaAgent
 from experiment import Experiment
 
 from argparse import ArgumentParser
@@ -13,19 +13,24 @@ parser.add_argument("--num_episodes", type=int, default=500, help="number of epi
 parser.add_argument("--min_seed", type=int, default=0, help="start value of seed")
 parser.add_argument("--seed_range", type=int, default=20, help="number of seed values from min_seed")
 
-def run_sarsa(num_episodes=500, min_seed=0, seed_range=20, kings_move_allowed=False, stochastic_wind=False, num_steps_lim=100000, info=""):
+def run(algo="sarsa", num_episodes=500, min_seed=0, seed_range=20, kings_move_allowed=False, stochastic_wind=False, num_steps_lim=100000, info=""):
     time_steps = []
     episode_lengths = []
     episode_rewards = []
 
     print("=======================================================================================")
-    print("Running Sarsa(0) on Windy GridWorld {info} [Seeds = {s}-{e}]".format(info=info, s=min_seed, e=min_seed + seed_range - 1))
+    print("Running {algo} agent on windy gridworld {info} [seeds = {s}-{e}]".format(algo=algo, info=info, s=min_seed, e=min_seed + seed_range - 1))
     print("=======================================================================================")
     for seed in range(min_seed, min_seed + seed_range):
         env = WindyGridworldEnv(kings_move_allowed, seed=seed, stochastic_wind=stochastic_wind)
-        agent = SarsaAgent(actions=range(env.nA), seed=seed)
+        if algo == "sarsa":
+            agent = SarsaAgent(actions=range(env.nA), seed=seed)
+        elif algo == "q-learning":
+            agent = QLearningAgent(actions=range(env.nA), seed=seed)
+        elif algo == 'expected-sarsa':
+            agent = ExpectedSarsaAgent(actions=range(env.nA), seed=seed)
         experiment = Experiment(env, agent)
-        expt_time_steps, expt_episode_lengths, expt_episode_rewards = experiment.run_sarsa(num_episodes, num_steps_lim)
+        expt_time_steps, expt_episode_lengths, expt_episode_rewards = experiment.run(num_episodes, num_steps_lim, algo=algo)
         time_steps.append(expt_time_steps)
         episode_lengths.append(expt_episode_lengths)
         episode_rewards.append(expt_episode_rewards)
@@ -67,30 +72,70 @@ def plot_sarsa(task, num_episodes, time_steps, episode_lengths, episode_rewards,
     plt.plot(np.arange(num_episodes+1), episode_rewards)
     plt.savefig("images/task_{}_extra_2.png".format(task))
 
-def task2(num_episodes=500, min_seed=0, seed_range=50, res=False):
-    time_steps, episode_lengths, episode_rewards = run_sarsa(num_episodes, min_seed=min_seed, seed_range=seed_range)
+def task2(num_episodes=500, min_seed=0, seed_range=20, res=False):
+    time_steps, episode_lengths, episode_rewards = run("sarsa", num_episodes, min_seed=min_seed, seed_range=seed_range)
     plot_sarsa(2, num_episodes, time_steps, episode_lengths, episode_rewards)
     if res:
         return time_steps, episode_lengths, episode_rewards
 
-def task3(num_episodes=500, min_seed=0, seed_range=50, res=False):
-    time_steps, episode_lengths, episode_rewards = run_sarsa(num_episodes, min_seed=min_seed, seed_range=seed_range, kings_move_allowed=True, info="(King's Moves Allowed)")
+def task3(num_episodes=500, min_seed=0, seed_range=20, res=False):
+    time_steps, episode_lengths, episode_rewards = run("sarsa", num_episodes, min_seed=min_seed, seed_range=seed_range, kings_move_allowed=True, info="(King's Moves Allowed)")
     plot_sarsa(3, num_episodes, time_steps, episode_lengths, episode_rewards, info="(King's Moves Allowed)")
     if res:
         return time_steps, episode_lengths, episode_rewards
 
-def task4(num_episodes=500, min_seed=0, seed_range=50, res=False):
-    time_steps, episode_lengths, episode_rewards = run_sarsa(num_episodes, min_seed=min_seed, seed_range=seed_range, stochastic_wind=True, kings_move_allowed=True, info="(Stochastic Winds, with King's Moves Allowed)")
+def task4(num_episodes=500, min_seed=0, seed_range=20, res=False):
+    time_steps, episode_lengths, episode_rewards = run("sarsa", num_episodes, min_seed=min_seed, seed_range=seed_range, stochastic_wind=True, kings_move_allowed=True, info="(Stochastic Winds, with King's Moves Allowed)")
     plot_sarsa(4, num_episodes, time_steps, episode_lengths, episode_rewards, info="(Stochastic Winds, with King's Moves Allowed)")
     if res:
         return time_steps, episode_lengths, episode_rewards
 
-def combined_plots(num_episodes=500, min_seed=0, seed_range=50):
+def task5(num_episodes=500, min_seed=0, seed_range=20, res=False):
+    ts_sarsa, el_sarsa, er_sarsa = task2(num_episodes, min_seed, seed_range, res=True)
+    ts_q, el_q, er_q = run("q-learning", num_episodes, min_seed=min_seed, seed_range=seed_range)
+    ts_exp_sarsa, el_exp_sarsa, er_exp_sarsa = run("expected-sarsa", num_episodes, min_seed=min_seed, seed_range=seed_range)
+
+    plt.figure(figsize=(16,8))
+    plt.ylabel("Episodes")
+    plt.xlabel("Time Steps")
+    plt.title("Windy GridWorld (Comparison of Learning Algorithms)\nEpisodes vs Time Steps")
+    plt.plot(ts_sarsa, np.arange(num_episodes + 1), label="Sarsa")
+    plt.plot(ts_q, np.arange(num_episodes + 1), label="Q-Learning")
+    plt.plot(ts_exp_sarsa, np.arange(num_episodes + 1), label="Expected Sarsa")
+    plt.legend()
+
+    if not os.path.exists("images"):
+        os.makedirs("images")
+
+    plt.savefig("images/task_5.png")
+
+    plt.figure()
+    plt.ylabel("Episode Length")
+    plt.xlabel("Episode")
+    plt.title("Windy GridWorld (Comparison of Learning Algorithms)\nEpisode Length vs Episode")
+    plt.plot(np.arange(num_episodes+1), el_sarsa, label="Sarsa")
+    plt.plot(np.arange(num_episodes+1), el_q, label="Q-Learning")
+    plt.plot(np.arange(num_episodes+1), el_exp_sarsa, label="Expected Sarsa")
+    plt.legend()
+    plt.savefig("images/task_5_extra_1.png")
+
+    plt.figure()
+    plt.ylabel("Episode Reward")
+    plt.xlabel("Episode")
+    plt.title("Windy GridWorld (Comparison of Learning Algorithms)\nEpisode Reward vs Episode")
+    plt.plot(np.arange(num_episodes+1), er_sarsa, label="Sarsa")
+    plt.plot(np.arange(num_episodes+1), er_q, label="Q-Learning")
+    plt.plot(np.arange(num_episodes+1), er_exp_sarsa, label="Expected Sarsa")
+    plt.legend()
+    plt.savefig("images/task_5_extra_2.png")
+
+
+def combined_plots(num_episodes=500, min_seed=0, seed_range=20):
     ts, el, er = task2(num_episodes, min_seed, seed_range, res=True)
     ts_king, el_king, er_king = task3(num_episodes, min_seed, seed_range, res=True)
     ts_stoch_king, el_stoch_king, er_stoch_king = task4(num_episodes, min_seed, seed_range, res=True)
 
-    ts_stoch, el_stoch, er_stoch = run_sarsa(num_episodes, min_seed=min_seed, seed_range=seed_range, stochastic_wind=True, info="(Stochastic Winds)")
+    ts_stoch, el_stoch, er_stoch = run("sarsa", num_episodes, min_seed=min_seed, seed_range=seed_range, stochastic_wind=True, info="(Stochastic Winds)")
 
 
     plt.figure(figsize=(12, 8))
@@ -140,6 +185,8 @@ def main():
         task3(args.num_episodes, args.min_seed, args.seed_range)
     elif args.task == 4:
         task4(args.num_episodes, args.min_seed, args.seed_range)
+    elif args.task == 5:
+        task5(args.num_episodes, args.min_seed, args.seed_range)
     elif args.task == 0:
         combined_plots(args.num_episodes, args.min_seed, args.seed_range)
     else:

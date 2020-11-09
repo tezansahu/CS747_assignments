@@ -10,7 +10,7 @@ class Experiment(object):
         self.episode_reward = np.array([0])
         self.time_steps = np.array([0])
 
-    def run_sarsa(self, max_number_of_episodes=500, num_steps_lim=50000):
+    def run(self, max_number_of_episodes=500, num_steps_lim=50000, algo="sarsa"):
 
         time_step = 0
         # repeat for each episode
@@ -39,17 +39,27 @@ class Experiment(object):
                 # take action, observe reward and next state
                 next_state, reward, done = self.env.step(action)
                 
-                # choose next action from next state using policy derived from Q
-                next_action = self.agent.act(next_state)
+                if algo == "sarsa":
+                    # choose next action from next state using policy derived from Q
+                    next_action = self.agent.act(next_state)
                 
-                # agent learn (SARSA update)
-                self.agent.learn(state, action, reward, next_state, next_action)
+                    # agent learn (SARSA update)
+                    self.agent.learn(state, action, reward, next_state, next_action)
                 
-                # state <- next state, action <- next_action
-                state = next_state
-                action = next_action
+                    # state <- next state, action <- next_action
+                    state = next_state
+                    action = next_action
+                
+                elif algo == "q-learning" or algo =="expected-sarsa":
+                    # agent learn (Q-Learning or Expected Sarsa update)
+                    self.agent.learn(state, action, reward, next_state)
+                    
+                    # state <- next state
+                    state = next_state
+                    # choose action from state using policy derived from Q
+                    action = self.agent.act(state)
 
-                R += reward # accumulate reward - for display
+                R += reward # accumulate reward 
             
             self.episode_length = np.append(self.episode_length, t)                 # keep episode length
             self.episode_reward = np.append(self.episode_reward, R)                 # keep episode reward

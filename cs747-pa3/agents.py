@@ -63,12 +63,82 @@ class SarsaAgent(EpsilonGreedyAgent):
         
         """
         SARSA Update
-        Q(s,a) <- Q(s,a) + alpha * (reward + gamma * Q(s',a') - Q(s,a))
+        Q(s,a) <- Q(s,a) + alpha * td_delta
         or
         Q(s,a) <- Q(s,a) + alpha * (td_target - Q(s,a))
         or
-        Q(s,a) <- Q(s,a) + alpha * td_delta
+        Q(s,a) <- Q(s,a) + alpha * ((reward + gamma * Q(s',a')) - Q(s,a))
         """
         td_target = reward + self.gamma * self.Q[(state2, action2)]
+        td_delta = td_target - self.Q[(state1, action1)]
+        self.Q[(state1, action1)] += self.alpha * td_delta
+
+
+class QLearningAgent(EpsilonGreedyAgent):
+    def __init__(self, actions, epsilon=0.01, alpha=0.5, gamma=1, seed=0):
+        super(QLearningAgent, self).__init__(actions, epsilon, alpha, gamma, seed)
+        np.random.seed(seed)
+
+    # Learn using Q-Learning Update
+    def learn(self, state1, action1, reward, state2, action2=None):
+        if (state1, action1) not in self.Q.keys():
+            self.Q[(state1, action1)] = 0
+        
+        """
+        Q-learning Update:
+        Q(s,a) <- Q(s,a) + alpha * td_delta
+        or
+        Q(s,a) <- Q(s,a) + alpha * (td_target - Q(s,a))
+        or
+        Q(s,a) <- Q(s,a) + alpha * ((reward + gamma * max_a'(Q(s', a'))) - Q(s,a))
+        """
+        Q_state2_max = float('-inf')
+        for a in self.actions:
+            if (state2, a) not in self.Q.keys():
+                self.Q[(state2, a)] = 0
+            
+            if self.Q[(state2, a)] > Q_state2_max:
+                Q_state2_max = self.Q[(state2, a)]
+        
+        td_target = reward + self.gamma * Q_state2_max
+        td_delta = td_target - self.Q[(state1, action1)]
+        self.Q[(state1, action1)] += self.alpha * td_delta
+
+class ExpectedSarsaAgent(EpsilonGreedyAgent):
+    def __init__(self, actions, epsilon=0.01, alpha=0.5, gamma=1, seed=0):
+        super(ExpectedSarsaAgent, self).__init__(actions, epsilon, alpha, gamma, seed)
+        np.random.seed(seed)
+
+    # Learn using Expected SARSA Update
+    def learn(self, state1, action1, reward, state2, action2=None):
+        if (state1, action1) not in self.Q.keys():
+            self.Q[(state1, action1)] = 0
+        
+        """
+        Expected SARSA Update
+        Q(s,a) <- Q(s,a) + alpha * td_delta
+        or
+        Q(s,a) <- Q(s,a) + alpha * (td_target - Q(s,a))
+        or
+        Q(s,a) <- Q(s,a) + alpha * ((reward + gamma * sum_a'(prob(a'|s') * Q(s',a'))) - Q(s,a))
+        """
+        prob = np.ones(self.num_actions) * (self.epsilon / self.num_actions)
+        
+        Q_state2_max = float('-inf')
+        best_a = None
+        for a in self.actions:
+            if (state2, a) not in self.Q.keys():
+                self.Q[(state2, a)] = 0
+            
+            if self.Q[(state2, a)] > Q_state2_max:
+                Q_state2_max = self.Q[(state2, a)]
+                best_a = a
+        prob[best_a] += (1 - self.epsilon)
+
+        expectation = 0
+        for a in self.actions:
+            expectation += prob[a] * self.Q[(state2, a)]
+
+        td_target = reward + self.gamma * expectation
         td_delta = td_target - self.Q[(state1, action1)]
         self.Q[(state1, action1)] += self.alpha * td_delta
