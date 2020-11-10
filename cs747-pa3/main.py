@@ -24,11 +24,11 @@ def run(algo="sarsa", num_episodes=500, min_seed=0, seed_range=20, kings_move_al
     for seed in range(min_seed, min_seed + seed_range):
         env = WindyGridworldEnv(kings_move_allowed, seed=seed, stochastic_wind=stochastic_wind)
         if algo == "sarsa":
-            agent = SarsaAgent(actions=range(env.nA), seed=seed)
+            agent = SarsaAgent(num_states=env.nS, actions=range(env.nA), seed=seed)
         elif algo == "q-learning":
-            agent = QLearningAgent(actions=range(env.nA), seed=seed)
+            agent = QLearningAgent(num_states=env.nS, actions=range(env.nA), seed=seed)
         elif algo == 'expected-sarsa':
-            agent = ExpectedSarsaAgent(actions=range(env.nA), seed=seed)
+            agent = ExpectedSarsaAgent(num_states=env.nS, actions=range(env.nA), seed=seed)
         experiment = Experiment(env, agent)
         expt_time_steps, expt_episode_lengths, expt_episode_rewards = experiment.run(num_episodes, num_steps_lim, algo=algo)
         time_steps.append(expt_time_steps)
