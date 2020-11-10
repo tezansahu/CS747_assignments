@@ -5,7 +5,7 @@ _Submitted by **Tezan Sahu [170100035]**_
 ## Directory Overview
 
 This `submission` directory contains the following:
-- `envs.py` file implements the Wingy GridWorld, along with its variants that include King's moves & stochastic winds
+- `envs.py` file implements the Windy GridWorld, along with its variants that include King's moves & stochastic winds
 - `agents.py` file contains implementations of the Sarsa, Q-Learning & Expected Sarsa Learning agents
 - `experiment.py` file implements the experimental setup for running a learning agent in an environmant for a fixed number of episodes, and return relevant data (episode lengths, time steps & episode rewards) needed for generating plots
 - `main.py` script, to run simulations, gather data & generate plots (steps to use this are mentioned [below](#usage))

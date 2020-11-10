@@ -82,7 +82,10 @@ class WindyGridworldEnv:
                 add_wind = [-1, 0]
             
             new_position = np.unravel_index(self.T[self.s][action][0][1], self.shape)
-            new_position = self._limit_coordinates(np.array(new_position) + np.array(add_wind)).astype(int)
+            if new_position[1] in [3,4,5,6,7,8]:
+                new_position = self._limit_coordinates(np.array(new_position) + np.array(add_wind)).astype(int)
+            else:
+                new_position = self._limit_coordinates(np.array(new_position)).astype(int)
             self.s = np.ravel_multi_index(tuple(new_position), self.shape)
             done = tuple(new_position) == (3, 7)
             reward = -1
