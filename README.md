@@ -5,5 +5,4 @@ This repository contains my solutions to Programming Assignments for CS747 [Foun
 ## Assignments
 - [Programming Assignment 1: Multi-Arm Bandits](./cs747-pa1/README.md)
 - [Programming Assignment 2: MDP Planning](./cs747-pa2/README.md)
-- Programming Assignment 3 [TBA]
-- Programming Assignment 4 [TBA]
+- [Programming Assignment 3: Windy GridWorld](./cs747-pa3/README.md)
